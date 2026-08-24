@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>服務單位一覽表 Directory</title>
+    <!-- Tailwind CSS for modern styling -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <!-- PapaParse for easy CSV reading -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <div class="max-w-7xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="mb-8 text-center">
+            <h1 class="text-3xl font-bold text-blue-900">服務單位一覽表</h1>
+            <p class="text-gray-600 mt-2">即時搜尋及瀏覽各服務單位資料</p>
+        </header>
+
+        <!-- Search Bar -->
+        <div class="mb-6">
+            <input type="text" id="searchInput" placeholder="輸入關鍵字搜尋（例如：中心、銅鑼灣、電話...）" 
+                class="w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm">
+        </div>
+
+        <!-- Table Container -->
+        <div class="bg-white shadow-md rounded-lg overflow-hidden border border-gray-200">
+            <div class="overflow-x-auto">
+                <table id="directoryTable" class="min-w-full divide-y divide-gray-200 text-sm">
+                    <thead class="bg-blue-900 text-white" id="tableHeader">
+                        <!-- Headers will load dynamically -->
+                    </thead>
+                    <tbody class="divide-y divide-gray-200 bg-white" id="tableBody">
+                        <!-- Data will load dynamically -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script to Load CSV and Enable Search -->
+    <script>
+        let tableData = [];
+
+        // Load CSV file (ensure your CSV is named directory.csv)
+        Papa.parse("directory.csv", {
+            download: true,
+            header: true,
+            skipEmptyLines: true,
+            complete: function(results) {
+                tableData = results.data;
+                renderTable(tableData);
+            }
+        });
+
+        function renderTable(data) {
+            const headerElement = document.getElementById("tableHeader");
+            const bodyElement = document.getElementById("tableBody");
+
+            headerElement.innerHTML = "";
+            bodyElement.innerHTML = "";
+
+            if (data.length === 0) return;
+
+            // Generate Table Headers based on CSV columns
+            const columns = Object.keys(data[0]);
+            let headerRow = "<tr>";
+            columns.forEach(col => {
+                headerRow += `<th class="px-6 py-3 text-left font-semibold uppercase tracking-wider">${col}</th>`;
+            });
+            headerRow += "</tr>";
+            headerElement.innerHTML = headerRow;
+
+            // Generate Table Rows
+            data.forEach(row => {
+                let tr = "<tr class='hover:bg-gray-50 transition-colors'>";
+                columns.forEach(col => {
+                    let cellValue = row[col] || "";
+                    // Replace newlines with breaks for multi-line text like addresses/phones
+                    cellValue = cellValue.replace(/\n/g, '<br>');
+                    tr += `<td class="px-6 py-4 whitespace-normal text-gray-700">${cellValue}</td>`;
+                });
+                tr += "</tr>";
+                bodyElement.innerHTML += tr;
+            });
+        }
+
+        // Live Search Functionality
+        document.getElementById("searchInput").addEventListener("input", function(e) {
+            const searchTerm = e.target.value.toLowerCase();
+            const filteredData = tableData.filter(row => {
+                return Object.values(row).some(val => 
+                    String(val).toLowerCase().includes(searchTerm)
+                );
+            });
+            renderTable(filteredData);
+        });
+    </script>
+</body>
+</html>
