@@ -3,48 +3,96 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>服務單位目錄 | Directory</title>
+    <title>服務單位目錄 | Directory Search</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <!-- PapaParse for CSV reading -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans min-h-screen flex flex-col">
+<body class="bg-gray-100 text-gray-800 font-sans min-h-screen flex flex-col">
 
     <!-- Navigation Bar -->
     <nav class="bg-blue-900 text-white shadow-md">
         <div class="max-w-7xl mx-auto px-6 py-4 flex justify-between items-center">
             <span class="text-xl font-bold tracking-wide">📂 服務單位資訊網</span>
-            <span id="recordCount" class="text-xs bg-blue-800 px-3 py-1.5 rounded-full font-medium">載入中...</span>
+            <span id="recordCount" class="text-xs bg-blue-800 px-3 py-1.5 rounded-full font-medium text-white">載入中...</span>
         </div>
     </nav>
 
-    <!-- Header Banner & Search -->
-    <header class="bg-gradient-to-r from-blue-900 to-indigo-800 text-white py-12 px-6 text-center shadow-inner">
-        <div class="max-w-3xl mx-auto">
-            <h1 class="text-3xl font-extrabold mb-3">服務單位一覽表</h1>
-            <p class="text-blue-200 mb-6 text-sm">輸入關鍵字即可即時篩選機構、地址、電話或負責人資料</p>
-            
-            <div class="relative max-w-xl mx-auto">
-                <input type="text" id="searchInput" placeholder="搜尋單位、地區、電話、負責人..." 
-                    class="w-full px-5 py-3.5 rounded-xl text-gray-800 bg-white focus:outline-none focus:ring-4 focus:ring-blue-300 shadow-lg text-base">
+    <!-- Main Container -->
+    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
+        
+        <!-- Search Card Panel (Matching your design reference) -->
+        <div class="bg-white shadow-lg rounded-2xl p-6 md:p-8 mb-8 border border-gray-200">
+            <!-- Search Title -->
+            <div class="flex items-center space-x-2 border-b border-gray-200 pb-4 mb-6">
+                <span class="text-amber-500 text-2xl font-bold">🔍</span>
+                <h1 class="text-xl font-bold text-amber-500 tracking-wide">搜尋服務單位</h1>
+            </div>
+
+            <!-- Filter Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                
+                <!-- 1. 資金來源 Funding Source -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">資金來源</label>
+                    <select id="filterSource" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <option value="">請選擇</option>
+                    </select>
+                </div>
+
+                <!-- 2. 地區 Region -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">上課地點 / 地區</label>
+                    <select id="filterRegion" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <option value="">請選擇</option>
+                    </select>
+                </div>
+
+                <!-- 3. 服務類別 Service Category -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">服務類別</label>
+                    <select id="filterService" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <option value="">請選擇</option>
+                    </select>
+                </div>
+
+                <!-- 4. 單位類別 Unit Type -->
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">單位類別</label>
+                    <select id="filterUnitType" class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <option value="">請選擇</option>
+                    </select>
+                </div>
+
+                <!-- 5. 關鍵字 Keyword Input -->
+                <div class="md:col-span-2">
+                    <label class="block text-xs font-bold text-gray-600 uppercase tracking-wider mb-2">單位名稱 / 關鍵字</label>
+                    <input type="text" id="keywordInput" placeholder="請輸入單位名稱、地址或電話..." 
+                        class="w-full bg-gray-50 border border-gray-300 rounded-lg px-4 py-3 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                </div>
+
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex justify-end space-x-4 pt-4 border-t border-gray-100">
+                <button id="resetBtn" class="px-6 py-2.5 rounded-xl border border-gray-300 text-gray-600 text-sm font-semibold hover:bg-gray-50 transition">重設</button>
+                <button id="searchBtn" class="px-8 py-2.5 rounded-xl bg-amber-400 hover:bg-amber-500 text-gray-900 text-sm font-bold shadow-md transition">搜尋</button>
             </div>
         </div>
-    </header>
 
-    <!-- Main Content Grid / Table Section -->
-    <main class="flex-grow max-w-7xl mx-auto px-4 py-8 w-full">
-        <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
+        <!-- Results Table Section -->
+        <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-200">
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-100 text-gray-700 font-bold uppercase tracking-wider text-xs">
                         <tr>
                             <th class="px-6 py-4 text-left">資金來源 / 地區</th>
-                            <th class="px-6 py-4 text-left">服務 / 單位名稱</th>
+                            <th class="px-6 py-4 text-left">服務與單位名稱</th>
                             <th class="px-6 py-4 text-left">地址</th>
                             <th class="px-6 py-4 text-left">聯絡電話 / 電郵</th>
                             <th class="px-6 py-4 text-left">負責人</th>
-                            <th class="px-6 py-4 text-left">備註 / 年齡</th>
+                            <th class="px-6 py-4 text-left">備註</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-200 bg-white" id="tableBody">
@@ -60,6 +108,7 @@
         <p>&copy; 2026 服務單位目錄. All rights reserved.</p>
     </footer>
 
+    <!-- Script to Load Data & Handle Filter Logic -->
     <script>
         let tableData = [];
 
@@ -68,10 +117,34 @@
             header: true,
             skipEmptyLines: true,
             complete: function(results) {
-                tableData = results.data;
+                // Filter out totals or empty rows
+                tableData = results.data.filter(row => row['組別 / 單位'] && row['組別 / 單位'] !== 'Total:');
+                populateDropdowns(tableData);
                 renderTable(tableData);
             }
         });
+
+        function populateDropdowns(data) {
+            const sources = [...new Set(data.map(item => item['資金來源']).filter(Boolean))];
+            const regions = [...new Set(data.map(item => item['地區']).filter(Boolean))];
+            const services = [...new Set(data.map(item => item['服務類別']).filter(Boolean))];
+            const unitTypes = [...new Set(data.map(item => item['單位類別']).filter(Boolean))];
+
+            fillSelect('filterSource', sources);
+            fillSelect('filterRegion', regions);
+            fillSelect('filterService', services);
+            fillSelect('filterUnitType', unitTypes);
+        }
+
+        function fillSelect(elementId, items) {
+            const select = document.getElementById(elementId);
+            items.sort().forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item;
+                opt.textContent = item;
+                select.appendChild(opt);
+            });
+        }
 
         function renderTable(data) {
             const bodyElement = document.getElementById("tableBody");
@@ -80,48 +153,41 @@
             countElement.textContent = `共 ${data.length} 筆記錄`;
 
             if (data.length === 0) {
-                bodyElement.innerHTML = `<tr><td colspan="6" class="px-6 py-8 text-center text-gray-400">沒有找到相符的資料</td></tr>`;
+                bodyElement.innerHTML = `<tr><td colspan="6" class="px-6 py-12 text-center text-gray-400 font-medium">沒有找到相符的服務單位資料</td></tr>`;
                 return;
             }
 
             data.forEach(row => {
-                // Map columns safely based on your exact column names in directory.csv
                 const source = row['資金來源'] || '';
                 const region = row['地區'] || '';
-                const serviceUnit = row['組別 / 單位'] || row['單位類別'] || '';
+                const serviceUnit = row['組別 / 單位'] || '';
                 const address = row['地址'] || '';
                 const phone = row['電話 (Fax no.)'] || '';
                 const email = row['電郵'] || '';
                 const charge = row['主任 / 負責人'] || '';
                 const remark = row['備註'] || row['服務年齡/面積 (平方米)'] || '';
 
-                let tr = `<tr class='hover:bg-blue-50/50 transition-colors align-top'>`;
+                let tr = `<tr class='hover:bg-amber-50/30 transition-colors align-top'>`;
                 
-                // Col 1: Source & Region
                 tr += `<td class="px-6 py-4 whitespace-nowrap">
                          <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2.5 py-1 rounded-md font-semibold mb-1">${source}</span><br>
                          <span class="text-gray-500 text-xs">${region}</span>
                        </td>`;
                 
-                // Col 2: Service / Unit Name
                 tr += `<td class="px-6 py-4 font-medium text-gray-900">
-                         <div class="text-sm font-bold text-blue-900">${row['單位類別'] || ''}</div>
-                         <div class="text-gray-700 mt-0.5">${serviceUnit.replace(/\n/g, '<br>')}</div>
+                         <div class="text-xs text-amber-600 font-bold mb-0.5">${row['服務類別'] || ''} - ${row['單位類別'] || ''}</div>
+                         <div class="text-sm font-bold text-blue-900">${serviceUnit.replace(/\n/g, '<br>')}</div>
                        </td>`;
 
-                // Col 3: Address
                 tr += `<td class="px-6 py-4 text-gray-600 text-xs max-w-xs leading-relaxed">${address.replace(/\n/g, '<br>')}</td>`;
 
-                // Col 4: Phone & Email
                 tr += `<td class="px-6 py-4 text-xs">
                          <div class="text-gray-900 font-semibold">${phone.replace(/\n/g, '<br>')}</div>
                          <div class="text-blue-600 mt-1"><a href="mailto:${email}" class="hover:underline">${email}</a></div>
                        </td>`;
 
-                // Col 5: Person in charge
                 tr += `<td class="px-6 py-4 text-xs text-gray-700 font-medium">${charge.replace(/\n/g, '<br>')}</td>`;
 
-                // Col 6: Remarks / Age
                 tr += `<td class="px-6 py-4 text-xs text-gray-500">${remark.replace(/\n/g, '<br>')}</td>`;
 
                 tr += `</tr>`;
@@ -129,15 +195,43 @@
             });
         }
 
-        // Search Filter
-        document.getElementById("searchInput").addEventListener("input", function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            const filteredData = tableData.filter(row => {
-                return Object.values(row).some(val => 
-                    String(val).toLowerCase().includes(searchTerm)
+        // Trigger Search Filter
+        function performSearch() {
+            const selectedSource = document.getElementById('filterSource').value;
+            const selectedRegion = document.getElementById('filterRegion').value;
+            const selectedService = document.getElementById('filterService').value;
+            const selectedUnitType = document.getElementById('filterUnitType').value;
+            const keyword = document.getElementById('keywordInput').value.toLowerCase();
+
+            const filtered = tableData.filter(row => {
+                const matchSource = !selectedSource || row['資金來源'] === selectedSource;
+                const matchRegion = !selectedRegion || row['地區'] === selectedRegion;
+                const matchService = !selectedService || row['服務類別'] === selectedService;
+                const matchUnit = !selectedUnitType || row['單位類別'] === selectedUnitType;
+                
+                const matchKeyword = !keyword || Object.values(row).some(val => 
+                    String(val).toLowerCase().includes(keyword)
                 );
+
+                return matchSource && matchRegion && matchService && matchUnit && matchKeyword;
             });
-            renderTable(filteredData);
+
+            renderTable(filtered);
+        }
+
+        // Event Listeners for Search & Reset
+        document.getElementById('searchBtn').addEventListener('click', performSearch);
+        document.getElementById('keywordInput').addEventListener('keyup', function(e) {
+            if (e.key === 'Enter') performSearch();
+        });
+
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            document.getElementById('filterSource').value = '';
+            document.getElementById('filterRegion').value = '';
+            document.getElementById('filterService').value = '';
+            document.getElementById('filterUnitType').value = '';
+            document.getElementById('keywordInput').value = '';
+            renderTable(tableData);
         });
     </script>
 </body>
